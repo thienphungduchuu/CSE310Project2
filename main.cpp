@@ -36,17 +36,16 @@ struct overlayTableEntry{
 
 struct bstTable{
     string symbol = "";
-    bstNode  bstName;
+    struct bstNode *nextNode;
 };
 
 struct bstNode{
-    int key; //A node of a binary search tree ordered on this key value.
-    int left; //Left child
-    int right; //Right child
+    int key = 0; //A node of a binary search tree ordered on this key value.
+    bstNode *left; //Left child
+    bstNode *right; //Right child
 };
 
 //Forward Declaration of methods
-
 
 int counter = 0;
 int offsetCounter = 0;
@@ -148,7 +147,22 @@ void strcat(symbolTableEntry *symbol, overlayTableEntry *overlay, string var, st
     }
 }
 
-void print(symbolTableEntry *symbolTable, overlayTableEntry *overlayTable, string var) {
+void printINORDER(bstNode *N){
+    if (N->key != 0){
+        printINORDER(N->left);
+        cout << N->key << "\t";
+        printINORDER(N->right);
+    }
+}
+
+void print (bstTable *T, string tableLocation){
+    for (int i = 0; i < counter; i++){
+        if (T[i].symbol.compare(tableLocation) == 0){
+            cout << "Printing BST: " << tableLocation << endl;
+            printINORDER(T[i].nextNode);
+        }
+    }
+/*void print(symbolTableEntry *symbolTable, overlayTableEntry *overlayTable, string var) {
     for (int i = 0; i < counter; i++) {
         if (strcmp(symbolTable[i].symbol, var.c_str()) == 0 && symbolTable[i].type == INT)
             cout << "The variable " << symbolTable[i].symbol << " has a value of " << overlayTable[i].intValue <<
@@ -156,7 +170,7 @@ void print(symbolTableEntry *symbolTable, overlayTableEntry *overlayTable, strin
         else if (strcmp(symbolTable[i].symbol, var.c_str()) == 0 && symbolTable[i].type == CHAR)
             cout << "The variable " << symbolTable[i].symbol << " has a value of " << overlayTable[i].charValue <<
             " ." << endl;
-    }
+    }*/
 }
 
 void free(symbolTableEntry *s, heapEntry *h, overlayTableEntry *o, string var){
@@ -194,21 +208,34 @@ void compact(heapEntry *h, symbolTableEntry *s){
 }
 
 void allocateBST(bstTable *T, string nodeName, int key){
-    for(int i =0; i < sizeof(T); i++){
+    for(int i = 0; i < sizeof(T); i++){
         if (T[i].symbol.compare("") == 0) {
             struct bstNode *root = new bstNode;
             root->key = key;
-            root->left = NULL;
-            root->right = NULL;
             T[i].symbol = nodeName;
-            memcpy(&T[i].bstName, &root, sizeof(root));
+            memcpy(&T[i].nextNode, &root, sizeof(root));
+            break;
         }
     }
 }
 
-void insert(string nodeInsert, string insertKey){
+void insert(bstTable *T, string nodeInsert, int insertKey){
     cout << "Inserting into BST..." << endl;
 
+    for(int i = 0; i < sizeof(T); i++){
+        if (T[i].symbol.compare(nodeInsert) == 0){
+            struct bstNode *temp1 = T[i].nextNode; //x
+            struct bstNode *temp2 = T[i].nextNode; //y
+            while(temp1->key == 0){
+                temp2->key = temp1->key;
+                if (insertKey < temp2->key)
+                    temp1 = temp1->left;
+                else
+                    temp1 = temp1->right;
+            }
+            temp1->key = insertKey;
+        }
+    }
 }
 
 int main(){
@@ -298,7 +325,7 @@ int main(){
         }
         if (cinCommand.compare("print") == 0){
             cin >> cinVar;
-            print(symTab, mallocTab, cinVar);
+            print(bstTab, cinVar);
 
         }
         if (cinCommand.compare("map") == 0){
@@ -314,8 +341,8 @@ int main(){
         }
         if (cinCommand.compare("insert") == 0){
             cin >> cinVar;
-            cin >> cinTemp;
-            insert(cinVar, cinTemp);
+            cin >> numInput;
+            insert(bstTab, cinVar, numInput);
         }
     }
 }
